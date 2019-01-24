@@ -10,7 +10,7 @@
 #include "config.h"
 
 // own objects
-#include "print_hex.h"
+#include "print.h"
 #include "memmem.h"
 
 
@@ -161,7 +161,7 @@ int return_match_index(char *string_now) {
     regex_t regex;
 
     if (regcomp(&regex, REGEX_GAME_ID_MATCH, 0)) {
-        printf("Could not compile Regex\n");
+        // printf("Could not compile Regex\n");
         return -1;
     }
 
@@ -189,7 +189,7 @@ int main(int argc, char const *argv[]) {
 
     // get the header from the file name
     if (!extract_header_from_file(arguments.args[0], USABLE_HEADER, header)) {
-        printf("Error opening/reading file\n");
+        // printf("Error opening/reading file\n");
         return ENOENT;
     }
 
@@ -245,8 +245,8 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    if (found_index != -1) printf("Found game ID: %s\n", strings_array[found_index]);
-    else printf("The game ID was not found\n");
+    if (found_index != -1) printf("%s\n", strings_array[found_index]);
+    else return 1;
 
     return 0;
 }
