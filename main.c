@@ -142,6 +142,19 @@ void clear_table(int table_size, unsigned char *table_pointer) {
         table_pointer[i] = 0;
 }
 
+int biggest_in_array(int *array_input, int array_size) {
+
+    int biggest = array_input[0];
+
+    for (int i = 0; i < array_size; ++i) {
+        if (array_input[i] > biggest)
+            biggest = array_input[i];
+    }
+
+    return biggest;
+
+}
+
 int main(int argc, char const *argv[]) {
 
     struct arguments arguments;
@@ -171,7 +184,7 @@ int main(int argc, char const *argv[]) {
     extract_block(CODE_BLOCK_OFFSET, BLOCK_SIZE, header, usable_block);
 
     // a little of verbose
-    print_hex(usable_block, BLOCK_SIZE, HORIZONTAL_SIZE);
+    // print_hex(usable_block, BLOCK_SIZE, HORIZONTAL_SIZE);
 
     // find the number of items in the block
     int number_of_items = find_occurences(
@@ -195,6 +208,20 @@ int main(int argc, char const *argv[]) {
 
     size_without_suffix(number_of_items, items_found_sizes, items_found_pointers,
                         SUCCEEDING_DATA, SUCCEEDING_DATA_SIZE, MAXIMUM_BUFFER_CHECK);
+
+    // transform the items into a array of strings
+    char strings_array[number_of_items][biggest_in_array(items_found_sizes, number_of_items) + 1];
+    for (int i = 0; i < number_of_items; ++i) {
+        int j = 0;
+        for (; j < items_found_sizes[i]; ++j) {
+            strings_array[i][j] = items_found_pointers[i][j];
+        }
+        strings_array[i][j] = '\0';
+    }
+
+    for (int i = 0; i < number_of_items; ++i) {
+        printf("%s\n", strings_array[i]);
+    }
 
     return 0;
 }
