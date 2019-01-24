@@ -10,7 +10,7 @@
 
 // own objects
 #include "print_hex.h"
-#include "memrmem.h"
+#include "memmem.h"
 
 
 // program version
@@ -126,6 +126,16 @@ void extract_occurences(unsigned char *byte_array_to_search, int byte_array_size
 
 }
 
+void size_without_suffix(int total_items, int *size_array, unsigned char *pointers[],
+                         unsigned char *suffix, int suffix_size, int pointer_maximum_size) {
+
+    for (int i = 0; i < total_items; ++i) {
+        unsigned char *pointer = memmem(pointers[i], pointer_maximum_size, suffix, suffix_size);
+        size_array[i] = (int)((unsigned long long)*&pointer - (unsigned long long)*&pointers[i]);
+    }
+
+}
+
 // clears a memory range
 void clear_table(int table_size, unsigned char *table_pointer) {
     for (int i = 0; i < table_size; ++i)
@@ -179,10 +189,12 @@ int main(int argc, char const *argv[]) {
         items_found_pointers
     );
 
-    for (int i = 0; i < number_of_items; ++i)
-        print_hex(items_found_pointers[i], 24, HORIZONTAL_SIZE);
+    // array of the sizes of the items
+    int items_found_sizes[number_of_items];
+    for (int i = 0; i < number_of_items; ++i) items_found_sizes[i] = 0;
 
-
+    size_without_suffix(number_of_items, items_found_sizes, items_found_pointers,
+                        SUCCEEDING_DATA, SUCCEEDING_DATA_SIZE, MAXIMUM_BUFFER_CHECK);
 
     return 0;
 }
