@@ -9,6 +9,7 @@
 #include "config.h"
 
 // own objects
+#include "print_hex.h"
 #include "memrmem.h"
 
 
@@ -74,42 +75,6 @@ int extract_header_from_file (char *file_name_path, int header_size, unsigned ch
     fclose(file_pointer);
 
     return 1;
-}
-
-// checks if the byte is inside the ascii range of readable chars
-int is_ascii_readable(unsigned char char_input) {
-    int ascii_byte_mm[2] = {0x20, 0x7E};
-    return char_input >= ascii_byte_mm[0] && char_input <= ascii_byte_mm[1];
-}
-
-// prints a hex and char table to stdout
-void print_hex(unsigned char *table, int table_size) {
-
-    for (int i = 0; i < table_size;) {
-
-        int now_horizontal = 0;
-
-        // memory leakage
-        if ((i + HORIZONTAL_SIZE) > table_size) now_horizontal = HORIZONTAL_SIZE - ((i + HORIZONTAL_SIZE) - table_size);
-        else now_horizontal = HORIZONTAL_SIZE;
-
-        printf("%016X - %0X - ", i, now_horizontal);
-
-        for (int j = 0; j < HORIZONTAL_SIZE; ++j)
-            if (j < now_horizontal) printf("%02X ", table[i+j]);
-            else printf("   ");
-
-        printf("\t");
-
-        for (int j = 0; j < HORIZONTAL_SIZE; ++j)
-            if (j < now_horizontal) printf("%c", is_ascii_readable(table[i+j]) ? table[i+j] : PRINT_NON_PRINTABLE);
-            else printf(" ");
-
-        printf("\n");
-
-        i += now_horizontal;
-    }
-
 }
 
 // extract a subblock of memory from another piece of memory
@@ -196,7 +161,7 @@ int main(int argc, char const *argv[]) {
     extract_block(CODE_BLOCK_OFFSET, BLOCK_SIZE, header, usable_block);
 
     // a little of verbose
-    print_hex(usable_block, BLOCK_SIZE);
+    print_hex(usable_block, BLOCK_SIZE, HORIZONTAL_SIZE);
 
     // find the number of items in the block
     int number_of_items = find_occurences(
@@ -215,7 +180,7 @@ int main(int argc, char const *argv[]) {
     );
 
     for (int i = 0; i < number_of_items; ++i)
-        print_hex(items_found_pointers[i], 24);
+        print_hex(items_found_pointers[i], 24, HORIZONTAL_SIZE);
 
 
 

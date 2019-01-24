@@ -10,4 +10,3 @@ unsigned char SUCCEEDING_DATA[] = {0x3B, 0x31, 0x00, 0x00};
 
 // verbose configs
 #define HORIZONTAL_SIZE 0x20
-#define PRINT_NON_PRINTABLE '.'
