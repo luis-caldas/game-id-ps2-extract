@@ -1,0 +1,4 @@
+.*
+!.gitignore
+*.header
+game-id-ps2-extract
