@@ -109,6 +109,7 @@ void print_hex(unsigned char *table, int table_size) {
 
         i += now_horizontal;
     }
+
 }
 
 // extract a subblock of memory from another piece of memory
@@ -116,12 +117,47 @@ void extract_block(int offset, int block_size, unsigned char *table, unsigned ch
     memcpy(block, &table[offset], block_size * sizeof(*block));
 }
 
-unsigned char *find_bytes(unsigned char *byte_array_to_search, int byte_array_size,
-               unsigned char *table, int table_size, int start_offset) {
+int find_occurences(unsigned char *byte_array_to_search, int byte_array_size,
+                    unsigned char *table, int table_size) {
 
-    unsigned char *pointer = memrmem(table, table_size, byte_array_to_search, byte_array_size);
+    // first pass to count the occurences
+    int occurences = 0;
+    int variable_table_size = table_size;
 
-    return pointer;
+    while(1) {
+
+        unsigned char *pointer = memrmem(table, variable_table_size, byte_array_to_search, byte_array_size);
+
+        if (pointer == NULL) break;
+        else {
+            ++occurences;
+            variable_table_size = ((unsigned long long)*&pointer - (unsigned long long)*&table);
+        }
+
+    }
+
+    return occurences;
+
+}
+
+void extract_occurences(unsigned char *byte_array_to_search, int byte_array_size,
+                        unsigned char *table, int table_size, unsigned char *items_array_pointer[]) {
+
+    // first pass to count the occurences
+    int occurences = 0;
+    int variable_table_size = table_size;
+
+    while(1) {
+
+        unsigned char *pointer = memrmem(table, variable_table_size, byte_array_to_search, byte_array_size);
+
+        if (pointer == NULL) break;
+        else {
+            items_array_pointer[occurences] = pointer + byte_array_size; ++occurences;
+            variable_table_size = ((unsigned long long)*&pointer - (unsigned long long)*&table);
+        }
+
+    }
 
 }
 
@@ -162,13 +198,26 @@ int main(int argc, char const *argv[]) {
     // a little of verbose
     print_hex(usable_block, BLOCK_SIZE);
 
-    printf("\n\n");
+    // find the number of items in the block
+    int number_of_items = find_occurences(
+        PRECEDING_DATA, PRECEDING_DATA_SIZE,
+        usable_block, BLOCK_SIZE
+    );
 
-    print_hex(find_bytes(
+    // create array of pointers to get the offsets
+    unsigned char *items_found_pointers[number_of_items];
+
+    // extract the found occurences
+    extract_occurences(
         PRECEDING_DATA, PRECEDING_DATA_SIZE,
         usable_block, BLOCK_SIZE,
-        0
-    ), 0x20);
+        items_found_pointers
+    );
+
+    for (int i = 0; i < number_of_items; ++i)
+        print_hex(items_found_pointers[i], 24);
+
+
 
     return 0;
 }
