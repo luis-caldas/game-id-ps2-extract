@@ -1,10 +1,16 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
+// standard libs
 #include <argp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
+// confi headers
 #include "config.h"
+
+// own objects
+#include "memrmem.h"
+
 
 // program version
 const char *argp_program_version = "0.1";
@@ -70,11 +76,13 @@ int extract_header_from_file (char *file_name_path, int header_size, unsigned ch
     return 1;
 }
 
+// checks if the byte is inside the ascii range of readable chars
 int is_ascii_readable(unsigned char char_input) {
     int ascii_byte_mm[2] = {0x20, 0x7E};
     return char_input >= ascii_byte_mm[0] && char_input <= ascii_byte_mm[1];
 }
 
+// prints a hex and char table to stdout
 void print_hex(unsigned char *table, int table_size) {
 
     for (int i = 0; i < table_size;) {
@@ -103,10 +111,21 @@ void print_hex(unsigned char *table, int table_size) {
     }
 }
 
+// extract a subblock of memory from another piece of memory
 void extract_block(int offset, int block_size, unsigned char *table, unsigned char* block) {
     memcpy(block, &table[offset], block_size * sizeof(*block));
 }
 
+unsigned char *find_bytes(unsigned char *byte_array_to_search, int byte_array_size,
+               unsigned char *table, int table_size, int start_offset) {
+
+    unsigned char *pointer = memrmem(table, table_size, byte_array_to_search, byte_array_size);
+
+    return pointer;
+
+}
+
+// clears a memory range
 void clear_table(int table_size, unsigned char *table_pointer) {
     for (int i = 0; i < table_size; ++i)
         table_pointer[i] = 0;
@@ -133,12 +152,23 @@ int main(int argc, char const *argv[]) {
         return ENOENT;
     }
 
+    // usable block that contains the game id
     unsigned char usable_block[BLOCK_SIZE];
     clear_table(BLOCK_SIZE, usable_block);
 
+    // extract from the header to the created block
     extract_block(CODE_BLOCK_OFFSET, BLOCK_SIZE, header, usable_block);
 
+    // a little of verbose
     print_hex(usable_block, BLOCK_SIZE);
+
+    printf("\n\n");
+
+    print_hex(find_bytes(
+        PRECEDING_DATA, PRECEDING_DATA_SIZE,
+        usable_block, BLOCK_SIZE,
+        0
+    ), 0x20);
 
     return 0;
 }
