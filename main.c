@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <regex.h>
 
 // confi headers
 #include "config.h"
@@ -155,6 +156,22 @@ int biggest_in_array(int *array_input, int array_size) {
 
 }
 
+int return_match_index(char *string_now) {
+
+    regex_t regex;
+
+    if (regcomp(&regex, REGEX_GAME_ID_MATCH, 0)) {
+        printf("Could not compile Regex\n");
+        return -1;
+    }
+
+    int match = regexec(&regex, string_now, 0, NULL, 0);
+    if (!match) return 1;
+
+    return 0;
+
+}
+
 int main(int argc, char const *argv[]) {
 
     struct arguments arguments;
@@ -219,9 +236,17 @@ int main(int argc, char const *argv[]) {
         strings_array[i][j] = '\0';
     }
 
+    int found_index = -1;
+    // find the game id through regex
     for (int i = 0; i < number_of_items; ++i) {
-        printf("%s\n", strings_array[i]);
+        if (return_match_index(strings_array[i])) {
+            found_index = i;
+            break;
+        }
     }
+
+    if (found_index != -1) printf("Found game ID: %s\n", strings_array[found_index]);
+    else printf("The game ID was not found\n");
 
     return 0;
 }
