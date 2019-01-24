@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <argp.h>
 
+#include "config.h"
+
 // program version
 const char *argp_program_version = "0.1";
 
