@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <argp.h>
@@ -101,6 +103,10 @@ void print_hex(unsigned char *table, int table_size) {
     }
 }
 
+void extract_block(int offset, int block_size, unsigned char *table, unsigned char* block) {
+    memcpy(block, &table[offset], block_size * sizeof(*block));
+}
+
 void clear_table(int table_size, unsigned char *table_pointer) {
     for (int i = 0; i < table_size; ++i)
         table_pointer[i] = 0;
@@ -127,7 +133,12 @@ int main(int argc, char const *argv[]) {
         return ENOENT;
     }
 
-    print_hex(header, USABLE_HEADER);
+    unsigned char usable_block[BLOCK_SIZE];
+    clear_table(BLOCK_SIZE, usable_block);
+
+    extract_block(CODE_BLOCK_OFFSET, BLOCK_SIZE, header, usable_block);
+
+    print_hex(usable_block, BLOCK_SIZE);
 
     return 0;
 }
